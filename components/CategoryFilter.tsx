@@ -1,6 +1,6 @@
-
 import React, { memo } from 'react';
-import { CATEGORIES } from '../constants';
+import { motion } from 'framer-motion';
+import { CATEGORIES, CATEGORY_ICONS } from '../constants';
 import { Category } from '../types';
 
 interface CategoryFilterProps {
@@ -8,29 +8,44 @@ interface CategoryFilterProps {
     onSelect: (cat: Category | 'All') => void;
 }
 
-const FilterPill = memo(({ children, active, onClick }: { children: React.ReactNode, active: boolean, onClick: () => void }) => (
-  <button 
-    onClick={onClick}
-    className={`
-        px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all whitespace-nowrap flex-shrink-0 border
-        ${active 
-            ? 'bg-white text-black border-white shadow-[0_0_25px_rgba(255,255,255,0.4)] scale-105 z-10' 
-            : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white hover:border-white/30 backdrop-blur-md'}
-    `}
-  >
-    {children}
-  </button>
-));
-
 export const CategoryFilter: React.FC<CategoryFilterProps> = memo(({ selected, onSelect }) => {
+    const allCategories: (Category | 'All')[] = ['All', ...CATEGORIES];
+
     return (
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-4 pt-1 px-1 mask-linear-fade">
-            <FilterPill active={selected === 'All'} onClick={() => onSelect('All')}>All</FilterPill>
-            {CATEGORIES.map(cat => (
-                <FilterPill key={cat} active={selected === cat} onClick={() => onSelect(cat)}>
-                    {cat}
-                </FilterPill>
-            ))}
+        <div className="w-full">
+            <div 
+                className="relative flex items-center overflow-x-auto no-scrollbar py-2"
+            >
+                {allCategories.map((cat) => {
+                    const isActive = selected === cat;
+                    return (
+                        <button
+                            key={cat}
+                            onClick={() => onSelect(cat)}
+                            className={`
+                                relative min-w-[fit-content] px-4 py-2.5 rounded-full text-sm font-semibold tracking-wide transition-colors duration-300 z-10 shrink-0 flex items-center justify-center gap-2
+                                ${isActive ? 'text-white' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'}
+                            `}
+                        >
+                            {isActive && (
+                                <motion.div
+                                    layoutId="activeFilter"
+                                    className="absolute inset-0 bg-zinc-800 dark:bg-zinc-700 rounded-full"
+                                    transition={{ 
+                                        type: "tween", 
+                                        duration: 0.3,
+                                        ease: "easeInOut"
+                                    }}
+                                />
+                            )}
+                            <span className="relative z-10 flex items-center gap-2">
+                                {CATEGORY_ICONS[cat] && React.cloneElement(CATEGORY_ICONS[cat] as React.ReactElement, { size: 16 })}
+                                {cat}
+                            </span>
+                        </button>
+                    );
+                })}
+            </div>
         </div>
     );
 });
